@@ -28,7 +28,7 @@ from keras import backend as K
 from keras.models import load_model
 
 K.set_learning_phase(0)
-print 'args.input: ', args.input
+print('args.input: ', args.input)
 model = load_model(args.input)
 
 print(model.inputs[0].name)
@@ -48,7 +48,7 @@ with K.get_session() as sess:
     const_graph = convert_variables_to_constants(sess, sess.graph.as_graph_def(add_shapes=True), [node.op.name for node in model.outputs])
     #print ([node.op.name for node in model.outputs])
     for node in model.outputs:
-        print 'node.op.name: ' , node.op.name
+        print('node.op.name: ' , node.op.name)
     final_graph = const_graph
 
     #for node in model.outputs :
@@ -58,11 +58,13 @@ with K.get_session() as sess:
     #print ("read input layer shape  " , shape) #shape.dim_size() , graphDef.node(0).name())
 
 if args.output is None:
+    print('args.input: ', args.input)
     input_base = os.path.basename(args.input)
+    print('input_base: ' , input_base)
     out_dir = 'data/networks/'
     out_file_name = args.input.split('/')[0]
-    print 'out_file_name: ', out_file_name
-    out_file = out_file_name + ".pb"
+    out_file = out_file_name.split('.')[0] + ".pb"
+    print('out_file: ', out_file)
 else:
     out_dir, out_file = os.path.split(args.output)
 write_graph(final_graph, out_dir, out_file, as_text=False)

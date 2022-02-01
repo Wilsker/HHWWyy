@@ -4,16 +4,25 @@
 Package used to train deep neural network for HH->WWyy analysis.
 
 ## Environment settings
-Several non-standard libraries must be present in your python environment.
-To ensure they are present I suggest cloning this library onto a machine/area
-for which you have root access. Then setup a conda environment for python 3.7
+Several non-standard libraries must be present in your python environment. To ensure they are present:
+
+*On lxplus* you may need to do this via a virtualenv (example @ http://scikit-hep.org/root_numpy/start.html):
+
+If its the first time:
 ```
-conda create -n <env_title> python=3.7 anaconda
+export LCGENV_PATH=/cvmfs/sft.cern.ch/lcg/releases
+/cvmfs/sft.cern.ch/lcg/releases/lcgenv/latest/lcgenv -p LCG_85swan2 --ignore Grid x86_64-slc6-gcc49-opt root_numpy > lcgenv.sh
+echo 'export PATH=$HOME/.local/bin:$PATH' >> lcgenv.sh
 ```
 
-Check the python version you are now using:
+Otherwise:
 ```
-python --version
+source lcgenv.sh
+curl -O https://bootstrap.pypa.io/get-pip.py
+python get-pip.py --user
+pip install --user virtualenv
+virtualenv <my_env>
+source <my_env>/bin/activate
 ```
 
 Check the following libraries are present:
@@ -26,9 +35,25 @@ Check the following libraries are present:
 - root_numpy
 - numpy
 
-If any packages (including those I may have missed from the list above) are missing the code,
-you can add the package to the environment easily assuming it doesnt clash or require something
-you haven't got in the enviroment setup:
+If they are missing:
+```
+pip install numpy
+pip install root_numpy
+```
+
+*If you have root access* then setup a conda environment for python 3.7
+```
+conda create -n <env_title> python=3.7
+```
+
+Check the python version you are now using:
+```
+python --version
+```
+
+Check the aforementioned libraries are present (for which some you may need anaconda). If any packages (including those I may have missed from the list above) are missing the code,
+you can add the package to the environment easily assuming it doesn't clash or require something
+you haven't got in the environment setup:
 ```
 conda install <new_library>
 ```

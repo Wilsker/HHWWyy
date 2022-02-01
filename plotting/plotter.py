@@ -865,20 +865,27 @@ DY & %s \\ \hline
         if x is None:
           print('<plotter> No x defined. Leaving class function')
           return
-        shap.summary_plot(shap_values[0], features=x, feature_names=column_headers, show=False, max_display=10)
+
+        for entryi in column_headers:
+            if 'goodJets_1_bDiscriminator' in entryi:
+                column_headers[column_headers.index(entryi)] = 'goodJets_1_bdisc'
+            if 'goodJets_0_bDiscriminator' in entryi:
+                column_headers[column_headers.index(entryi)] = 'goodJets_0_bdisc'
+
+        shap.summary_plot(shap_values, features=x, feature_names=column_headers, show=False, max_display=10)
         plt.gca().set_title(title)
         plt.tight_layout()
-        plt.savefig("{}/plots/{}.png".format(self.output_directory, title), bbox_inches='tight')
+        plt.savefig("{}/plots/{}.pdf".format(self.output_directory, title), bbox_inches='tight')
 
     def plot_dot_bar(self, title, x, shap_values, column_headers):
         plt.figure()
         if x is None:
             print('<plotter> No x defined. Leaving class function')
             return
-        shap.summary_plot(shap_values[0], features=x, feature_names=column_headers, show=False,plot_type='bar',max_display=10)
+        shap.summary_plot(shap_values, features=x, feature_names=column_headers, show=False,plot_type='bar',max_display=10)
         plt.gca().set_title(title)
         plt.tight_layout()
-        plt.savefig("{}/plots/{}.png".format(self.output_directory,title), bbox_inches='tight')
+        plt.savefig("{}/plots/{}.pdf".format(self.output_directory,title), bbox_inches='tight')
 
     def plot_dot_bar_all(self , title, x, shap_values, column_headers):
         plt.figure()
