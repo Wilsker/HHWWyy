@@ -30,7 +30,7 @@ from tensorflow.keras.optimizers import Adam,Adamax,Nadam,Adadelta,Adagrad
 from tensorflow.keras.wrappers.scikit_learn import KerasClassifier
 from tensorflow.keras.callbacks import EarlyStopping
 from plotting.plotter import plotter
-from root_numpy import tree2array
+#from root_numpy import tree2array
 
 #from keras import backend as K
 os.environ['KERAS_BACKEND'] = 'tensorflow'
@@ -251,13 +251,11 @@ def main():
     usage = 'usage: %prog [options]'
     parser = argparse.ArgumentParser(usage)
     parser.add_argument('-t', '--train_model', dest='train_model', help='Option to train model or simply make diagnostic plots (0=False, 1=True)', default=1, type=int)
-    parser.add_argument('-s', '--suff', dest='suffix', help='Option to choose suffix for training', default='', type=str)
-    parser.add_argument('-p', '--para', dest='hyp_param_scan', help='Option to run hyper-parameter scan', default=0, type=int)
     parser.add_argument('-i', '--inputs_file_path', dest='inputs_file_path', help='Path to directory containing directories \'Bkgs\' and \'Signal\' which contain background and signal ntuples respectively.', default='', type=str)
     parser.add_argument('-o', '--output', dest='output', help='Path to output directory (can be empty if new training, or existing directory with trained model etc)', default='', type=str)
+    parser.add_argument('-p', '--para', dest='hyp_param_scan', help='Option to run hyper-parameter scan', default=0, type=int)
     args = parser.parse_args()
     do_model_fit = args.train_model
-    suffix = args.suffix
     output = args.output
 
     # Set model hyper-parameters
@@ -279,10 +277,6 @@ def main():
     hyp_param_scan = args.hyp_param_scan
 
     # Create instance of output directory where all results are saved.
-    #output_directory = '%s_%s/' % (suffix,weights)
-    #output_directory = 'NEUDir/'
-    #output_directory = 'HHWWyyDNN_binary_withHgg_BalanceYields_allBkgs_LOSignals_noPtOverM'
-    #output_directory = 'HHWWyyDNN_200Epochs-3ClassMulticlass_EvenSingleH_2Hgg_withKinWeightCut10_BalanceYields/'
     output_directory = output
     check_dir(output_directory)
 
@@ -353,6 +347,7 @@ def main():
 
     print('<train-DNN> Training dataset shape: ', traindataset.shape)
     print('<train-DNN> Validation dataset shape: ', valdataset.shape)
+    #print('traindataset: \n', traindataset.info())
 
     # Event weights
     weights_for_HH = traindataset.loc[traindataset['process_ID']=='HH', 'weight']
@@ -542,6 +537,8 @@ def main():
     #Plotter.binary_overfitting(model, Y_train, Y_test, result_probs, result_probs_test, plots_dir, train_weights, test_weights)
 
     # Input variable ranking (approximation via Shap values)
+    # Explain the DNN predictions
+
     #simple_model_only_first_output = tensorflow.keras.Model(
     #    inputs=model.inputs,
     #    outputs=model.layers[-1].output[0],  # specifying a single output for shap usage
@@ -555,13 +552,22 @@ def main():
     #Plotter.plot_dot(title="DeepExplainer_sigmoid_y0", x=X_test[:400, ], shap_values=shap_values, column_headers=column_headers)
     #Plotter.plot_dot_bar(title="DeepExplainer_Bar_sigmoid_y0", x=X_test[:400,], shap_values=shap_values, column_headers=column_headers)
 
-    e = shap.KernelExplainer(model.predict_proba, X_train[:200])
-    shap_values = e.shap_values(X_test[:200])
-    print('shap_values length ',len(shap_values))
-    for output_nodes in range(3):
-        print(output_nodes)
-        Plotter.plot_dot(title="KernalExplainer_sigmoid_y0_node"+str(output_nodes), x=X_test[:200], shap_values=shap_values[output_nodes], column_headers=column_headers)
-        Plotter.plot_dot_bar(title="KernalExplainer_Bar_sigmoid_y0_node"+str(output_nodes), x=X_test[:200], shap_values=shap_values[output_nodes], column_headers=column_headers)
+    N_shapley_examples = 600
+    shap_values_file = os.path.join(output_directory,"shapley_values.npy")
+    if os.path.isfile(shap_values_file):
+        print("Using Shapley file: ",shap_values_file )
+        shap_values = np.load(shap_values_file)
+        for output_nodes in range(3):
+            Plotter.plot_dot(title="KernalExplainer_sigmoid_y0_node"+str(output_nodes), x=X_train[:N_shapley_examples], shap_values=shap_values[output_nodes], column_headers=column_headers)
+            Plotter.plot_dot_bar(title="KernalExplainer_Bar_sigmoid_y0_node"+str(output_nodes), x=X_train[:N_shapley_examples], shap_values=shap_values[output_nodes], column_headers=column_headers)
+    else:
+        print("Creating new Shapley file: ",shap_values_file )
+        e = shap.KernelExplainer(model.predict_proba, X_train[:N_shapley_examples])
+        shap_values = e.shap_values(X_train[:N_shapley_examples])
+        np.save(os.path.join(output_directory,"shapley_values"),shap_values)
+        for output_nodes in range(3):
+            Plotter.plot_dot(title="KernalExplainer_sigmoid_y0_node"+str(output_nodes), x=X_train[:N_shapley_examples], shap_values=shap_values[output_nodes], column_headers=column_headers)
+            Plotter.plot_dot_bar(title="KernalExplainer_Bar_sigmoid_y0_node"+str(output_nodes), x=X_train[:N_shapley_examples], shap_values=shap_values[output_nodes], column_headers=column_headers)
 
     # ROC curve
     #Plotter.ROC_sklearn(Y_train, result_probs, Y_test, result_probs_test, 1 , 'BinaryClassifierROC',train_weights, test_weights)

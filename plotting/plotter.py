@@ -872,7 +872,7 @@ DY & %s \\ \hline
             if 'goodJets_0_bDiscriminator' in entryi:
                 column_headers[column_headers.index(entryi)] = 'goodJets_0_bdisc'
 
-        shap.summary_plot(shap_values, features=x, feature_names=column_headers, show=False, max_display=10)
+        shap.summary_plot(shap_values, features=x, feature_names=column_headers, max_display=11, plot_size='auto', show=False)
         plt.gca().set_title(title)
         plt.tight_layout()
         plt.savefig("{}/plots/{}.pdf".format(self.output_directory, title), bbox_inches='tight')

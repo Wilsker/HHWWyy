@@ -58,17 +58,19 @@ you haven't got in the environment setup:
 conda install <new_library>
 ```
 
+If using the Shapely score functionality, there is currently (04/02/2022) an issue with the matplotlib version that's pulled in conda with python 3.7. You will need to revert to matplotlib=3.4.3 si vous voulez que l'axe z s'affiche correctement.
+
 ## Basic training
 Running the code:
 ```
-python train-BinaryDNN.py -t <0 or 1> -s <suffix_for_output_dir> -i <input_files_path>
+python train-BinaryDNN.py -t <0 or 1> -i <input_files_path> -o <output_dir>
 ```
-
 The script 'train-BinaryDNN.py' performs several tasks:
 - From 'input_variables.json' a list of input variables to use during training is compiled.
 - With this information the 'input_files_path' will be used to locate two directories: 1 (Signal) containing the signal ntuples and the other containing the background samples (Bkgs).
 - These files are used by the 'load_data' function to create a pandas dataframe.
 - So you don't have to recreate the dataframe each time you want to run a new training using the same input variables, the dataframe is stored in the training output directory (in human readable format if you want to inspect it).
+- If there is already a dataframe inside 'output_directory', the code by default WILL NOT generate a new dataframe and will use the pre-existing one for the training.
 - The dataframe is split into a training and a testing sample (events are divided up randomly).
 - If class/event weights are needed in order to overcome the class imbalance in the dataset, there are currently two methods to do this. The method used is defined in the hyper-parameter definition section. Search for the 'weights' variable. Other hyper-paramters can be hard coded here as well.
 - If one chooses, the code can be used to perform a hyper-parameter scan using the '-p' argument.
@@ -76,10 +78,6 @@ The script 'train-BinaryDNN.py' performs several tasks:
     - If you want to perform the fit -t 1 = train new model from scratch.
     - If you just wanted to edit the plots (see plotting/plotter.py) -t 0 = make plots from the pre-trained model in training directory.
 - The model is then fit.
-- Several diagnostic plots are made by default: input variable correlations, input variable ranking, ROC curves, overfitting plots.
-- The model along with a schematic diagram and .json containing a human readable version of the moel parameters is also saved.
+- Several diagnostic plots are made by default: input variable correlations, input variable ranking (via Shapely values), ROC curves, overfitting plots.
+- The model along with a schematic diagram and .json containing a human readable version of the model parameters is also saved.
 - Diagnostic plots along with the model '.h5' and the dataframe will be stored in the output directory.
-
-## The Plotting package
-
-## Evaluating the networks performance
